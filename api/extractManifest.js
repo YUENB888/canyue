@@ -1,23 +1,22 @@
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-const AdmZip = require('adm-zip');
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
+import AdmZip from "adm-zip";
 
-const app = express();
-
-const upload = multer({ dest: '/tmp/' });
-
-app.use(express.json());
-app.use(express.static('public'));
-
-app.post('/api/extractManifest', upload.single('apkFile'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded." });
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
   }
 
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(chunk);
+  }
+  const buffer = Buffer.concat(chunks);
+
   try {
-    const zip = new AdmZip(req.file.path);
+    const zip = new AdmZip(buffer);
     const xmlEntry = zip.getEntry("AndroidManifest.xml");
 
     if (!xmlEntry) {
@@ -25,10 +24,8 @@ app.post('/api/extractManifest', upload.single('apkFile'), (req, res) => {
     }
 
     const xmlData = xmlEntry.getData().toString("utf8");
-    res.json({ manifest: xmlData });
+    res.status(200).json({ manifest: xmlData });
   } catch (e) {
     res.status(500).json({ error: "Failed to extract APK." });
   }
-});
-
-app.listen(3000, () => console.log("API running on port 3000"));
+}
