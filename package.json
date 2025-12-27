@@ -1,0 +1,14 @@
+{
+  "name": "canyue-apk-api",
+  "version": "1.0.0",
+  "description": "APK Decompile & Recompile API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node api/extractManifest.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5",
+    "adm-zip": "^0.5.9"
+  }
+}
