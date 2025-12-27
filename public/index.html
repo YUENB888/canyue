@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>APK XML Extractor</title>
+</head>
+<body>
+  <h1>APK Decompiler</h1>
+
+  <h2>Step 1: Upload APK</h2>
+  <input type="file" id="fileApk">
+  <button onclick="extract()">Extract XML</button>
+
+  <pre id="xmlArea"></pre>
+
+  <h2>Step 2: After Edit - Upload XML</h2>
+  <input type="file" id="fileXml">
+  <button onclick="uploadXml()">Submit XML</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function extract() {
+      const file = document.getElementById("fileApk").files[0];
+      if (!file) return alert("Select APK first!");
+
+      const fd = new FormData();
+      fd.append("apkFile", file);
+
+      const res = await fetch("/api/extractManifest", {
+        method: "POST",
+        body: fd,
+      });
+      const j = await res.json();
+
+      document.getElementById("xmlArea").textContent = j.manifest || j.error;
+    }
+
+    async function uploadXml() {
+      const file = document.getElementById("fileXml").files[0];
+      if (!file) return alert("Select XML!");
+
+      const fd = new FormData();
+      fd.append("manifest", file);
+
+      const res = await fetch("/api/recompile", {
+        method: "POST",
+        body: fd,
+      });
+      const j = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(j);
+    }
+  </script>
+</body>
+</html>
